@@ -32,7 +32,98 @@ namespace CryptoFile
             {
                 argCount += 1;
             }
-            if(string.IsNullOrEmpty(password))
+            string name = parser.LastValue();
+            if (string.IsNullOrEmpty(input) && string.IsNullOrEmpty(output))
+            {
+                if (argCount >= args.Length || string.IsNullOrEmpty(name))
+                {
+                    return -1;
+                }
+                argCount++;
+                if (name.EndsWith(".crypto"))
+                {
+                    if (decrypt)
+                    {
+                        input = name;
+                        output = input.Substring(0, input.Length - 7);
+                    }
+                    else
+                    {
+                        output = name;
+                        input = output.Substring(0, input.Length - 7);
+                    }
+                }
+                else
+                {
+                    if (decrypt)
+                    {
+                        input = name + ".crypto";
+                        output = name;
+                    }
+                    else
+                    {
+                        output = name;
+                        input = name + ".crypto";
+                    }
+                }
+            }
+            else if (string.IsNullOrEmpty(input))
+            {
+                if (argCount >= args.Length || string.IsNullOrEmpty(name))
+                {
+                    if (output.EndsWith(".crypto"))
+                    {
+                        if (decrypt)
+                        {
+                            Console.WriteLine("入力ファイルが正しく指定されていません");
+                            return -1;
+                        }
+                        else
+                        {
+                            input = output.Substring(0, input.Length - 7);
+                        }
+                    }
+                }
+                else
+                {
+                    argCount++;
+                    input = name;
+                }
+            }
+            else if (string.IsNullOrEmpty(output))
+            {
+                if (argCount >= args.Length || string.IsNullOrEmpty(name))
+                {
+                    if (input.EndsWith(".crypto"))
+                    {
+                        if (decrypt)
+                        {
+                            output = input.Substring(0, input.Length - 7);
+                        }
+                        else
+                        {
+                            Console.WriteLine("出力ファイルが正しく指定されていません");
+                            return -1;
+                        }
+                    }
+                }
+                else
+                {
+                    argCount++;
+                    output = name;
+                }
+            }
+            if (!File.Exists(input))
+            {
+                Console.WriteLine("入力ファイルが存在していません");
+                return -1;
+            }
+            if (File.Exists(output))
+            {
+                Console.WriteLine("出力ファイルがすでに存在しています");
+                return -1;
+            }
+            if (string.IsNullOrEmpty(password))
             {
                 if (decrypt)
                 {
@@ -43,41 +134,9 @@ namespace CryptoFile
                 byte[] rand = new byte[8];
                 rng.GetBytes(rand);
                 password = Convert.ToBase64String(rand);
-                Console.WriteLine("new key string="+password);
+                Console.WriteLine("new key string=" + password);
             }
-            if (string.IsNullOrEmpty(input))
-            {
-                var name = parser.LastValue();
-                if (argCount>=args.Length || string.IsNullOrEmpty(name))
-                {
-                    return -1;
-                }
-                argCount++;
-                input = name;
-            }
-            if (string.IsNullOrEmpty(output))
-            {
-                var name = parser.LastValue();
-                if (argCount < args.Length && !string.IsNullOrEmpty(name))
-                {
-                    output=name;
-                }
-                if (decrypt)
-                {
-                    if(input.EndsWith(".crypto"))
-                    {
-                        output = input.Substring(0, input.Length - 6);
-                    }
-                    else
-                    {
-                        output = input + ".decrypto";
-                    }
-                }
-                else
-                {
-                    output = input + ".crypto";
-                }
-            }
+
             Console.WriteLine("input=" + input);
             Console.WriteLine("output=" + output);
             if(decrypt)
